@@ -1,0 +1,22 @@
+# temp
+__pycache__/
+.mypy_cache/
+*.pyc
+
+# IDE files
+/.idea/
+
+# notes
+/TODO.md
+
+# build scripts
+/vendor.py
+
+# source control
+/.apignore
+/.gitignore
+/.git/
+
+# ci and linters
+/.codespellrc
+/.codespellignore
