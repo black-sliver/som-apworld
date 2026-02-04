@@ -12,7 +12,6 @@ from worlds.Files import APDeltaPatch
 from .gen import (
     ItemId,
     LocationId,
-    WorkingDataKey,
     character_class_keys,
     character_exists_keys,
     character_in_logic_keys,
@@ -22,6 +21,9 @@ from .gen import (
     progression_items,
     spell_progression,
     useful_items,
+    item_name_to_id,
+    location_name_to_id,
+    item_name_groups,
 )
 from .options import SoMOptions, Goal, SoMROptionProto
 
@@ -51,42 +53,13 @@ def require_pysomr() -> None:
     except ModuleNotFoundError:
         raise Exception("Please run ModuleUpdate")
 
-    pysomr_version = metadata_version("pysomr")
-    if pysomr_version != required_pysomr_version:
-        # TODO: uninstall
-        raise ValueError(f"Wrong pysomr bundled: expected {required_pysomr_version} got {pysomr_version}")
-
-
-def _get_item_mapping() -> dict[str, int]:
-    require_pysomr()
-
-    from pysomr import OW  # TODO: generate table from somr ahead of time
-
-    somr_items = {item.name: item.id for item in OW.get_all_items()}
-    return {
-        **somr_items,
-    }
-
-
-def _get_location_mapping() -> dict[str, int]:
-    require_pysomr()
-
-    from pysomr import OW  # TODO: generate table from somr ahead of time
-
-    def fixup_location_name(s: str) -> str:
-        return s.replace("(sprite)", "item1").replace("(bow)", "item2").split(" (", 1)[0].replace("lighthouse", "solar")
-
-    somr_locations = {fixup_location_name(location.name): location.id for location in OW.get_all_locations()}
-    return {
-        **somr_locations,
-        "boy starter weapon": ItemId.boy + 256,
-        "girl starter weapon": ItemId.girl + 256,
-        "sprite starter weapon": ItemId.sprite + 256,
-    }
-
-
-def _get_item_grouping() -> dict[str, set[str]]:
-    return {}  # TODO: implement this
+    try:
+        pysomr_version = metadata_version("pysomr")
+        if pysomr_version != required_pysomr_version:
+            # TODO: uninstall
+            raise ValueError(f"Wrong pysomr bundled: expected {required_pysomr_version} got {pysomr_version}")
+    except ModuleNotFoundError:
+        raise Exception("Did not find pysomr after installation")
 
 
 class SoMWebWorld(WebWorld):
@@ -135,9 +108,9 @@ class SoMWorld(World):
     web = SoMWebWorld()
     required_client_version = (0, 6, 0)
 
-    item_name_to_id = _get_item_mapping()
-    location_name_to_id = _get_location_mapping()
-    item_name_groups = _get_item_grouping()
+    item_name_to_id = item_name_to_id
+    location_name_to_id = location_name_to_id
+    item_name_groups = item_name_groups
 
     ow: "OW"
     """upstream SoMR OpenWorld instance"""
@@ -234,7 +207,7 @@ class SoMWorld(World):
         # actual locations
         for location in self.ow.generator.get_locations():
             location_id = location.id
-            if location_id < LocationId.mech_rider3:  # TODO: LocationId.Something  # ignore internal-only locations
+            if location_id < LocationId.mech_rider3:
                 continue
             location_rule = self.make_location_rule(location.requirements)
             self.add_location(ingame, location_id, None, location_rule)
@@ -269,15 +242,15 @@ class SoMWorld(World):
     def create_items(self) -> None:
         items: list[SoMItem] = []
         for char in self.starting_characters:
-            self.multiworld.push_precollected(self.create_item_by_id(getattr(ItemId, char)))
-            self.multiworld.push_precollected(self.create_item_by_id(self.starter_weapons[char]))
+            self.multiworld.push_precollected(self._create_item(getattr(ItemId, char)))
+            self.multiworld.push_precollected(self._create_item(self.starter_weapons[char]))
             caster = spell_progression[self.char_classes[char]]
             self.multiworld.push_precollected(self.create_event_reward(caster))
         for item in self.ow.generator.get_items():
             item_id: int = item.id
             if ItemId.nothing < item_id < ItemId.glove_orb:  # ignore internal-only items
                 continue
-            items.append(self.create_item_by_id(item_id))
+            items.append(self._create_item(item_id))
         self.multiworld.itempool += items
 
     def set_rules(self) -> None:
@@ -478,10 +451,10 @@ class SoMWorld(World):
 
     def create_item(self, name: str) -> "Item":
         if name in ("nothing", "Nothing"):
-            return self.create_item_by_id(ItemId.nothing)
-        return self.create_item_by_id(self.item_name_to_id[name])
+            return self._create_item(ItemId.nothing)
+        return self._create_item(self.item_name_to_id[name])
 
-    def create_item_by_id(self, item_id: int | str) -> "SoMItem":
+    def _create_item(self, item_id: int | str) -> "SoMItem":
         # NOTE: we map 0: nothing to AP builtin Nothing
         name: str
         if item_id == 0 or item_id == "nothing":
@@ -494,9 +467,9 @@ class SoMWorld(World):
             name = self.item_id_to_name[item_id]
         assert isinstance(item_id, int)
         # NOTE: because all characters lock a weapon, all of them need to be marked as progression
-        prog = name in progression_items or item_id in character_items  # TODO: switch to ID
+        prog = item_id in progression_items or item_id in character_items
         # TODO: seeds should only be a prog item if MTR or restrictive
-        useful = not prog and name in useful_items  # TODO: switch to ID
+        useful = not prog and item_id in useful_items
         classification = (
             ItemClassification.progression
             if prog
@@ -528,7 +501,7 @@ class SoMWorld(World):
         rule: t.Callable[[CollectionState], bool] | None = None,
     ) -> None:
         if isinstance(locked_item, int):
-            locked_item = self.create_item_by_id(locked_item)
+            locked_item = self._create_item(locked_item)
         assert locked_item is None or isinstance(locked_item, SoMItem), "Invalid locked_item"
         location = SoMLocation(self.player, self.location_id_to_name[location_id], location_id, region)
         if rule:
@@ -542,10 +515,18 @@ class SoMItem(Item):
     game: str = SoMWorld.game
     __slots__ = ()  # disable __dict__
 
+    def __init__(self, name: str, classification: ItemClassification, code: ItemId | int | None, player: int):
+        # convert ItemId to int for Item
+        super().__init__(name, classification, None if code is None else int(code), player)
+
 
 class SoMLocation(Location):
     game: str = SoMWorld.game
     __slots__ = ()  # disables __dict__ once Location has __slots__
+
+    def __init__(self, player: int, name: str, address: LocationId | int | None, parent: Region | None = None):
+        # convert LocationId to int for Location
+        super().__init__(player, name, None if address is None else int(address), parent)
 
 
 _hash = SoMSettings.RomFile.md5s[0]
