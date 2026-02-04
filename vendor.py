@@ -70,7 +70,7 @@ def get_os_and_arch(platform: str) -> tuple[str, str] | None:
 def is_file_identical(a: Path, b: Path, as_text: bool, missing_result: bool | None = None) -> bool:
     import filecmp
 
-    if missing_result is not None and not a.exists() or not b.exists():
+    if missing_result is not None and (not a.exists() or not b.exists()):
         return missing_result
     if filecmp.cmp(a, b):
         return True
