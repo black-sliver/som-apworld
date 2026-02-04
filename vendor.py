@@ -99,14 +99,16 @@ def load_pypi_json(requirement_name: str) -> dict[str, Any]:
             raise ValueError("Cache invalid")
         if age < timedelta(hours=1):
             with open(cache_file, "r") as f:
-                return json.load(f)
-        raise ValueError("Cache outdated")
+                res = json.load(f)
+        else:
+            raise ValueError("Cache outdated")
     except (FileNotFoundError, ValueError):
         res = requests.get(f"https://pypi.python.org/pypi/{requirement_name}/json").json()
         cache_file.parent.mkdir(parents=True, exist_ok=True)
         with open(cache_file, "w") as f:
             json.dump(res, f)
-        return res
+    assert isinstance(res, dict)
+    return res
 
 
 def load_wheel(url: str, digest: dict[str, str]) -> bytes:
@@ -127,15 +129,15 @@ def load_wheel(url: str, digest: dict[str, str]) -> bytes:
     url_hash = urlsafe_b64encode(hashlib.sha256(url.encode()).digest()).rstrip(b"=").decode()
     cache_file = platformdirs.user_cache_path("Archipelago") / "downloads" / f"{url_hash}.whl"
     try:
-        with open(cache_file, "rb") as f:
-            wheel_data = f.read()
+        with open(cache_file, "rb") as f_in:
+            wheel_data = f_in.read()
         check_hash()
     except (FileNotFoundError, ValueError):
         wheel_data = requests.get(url).content
         check_hash()
         cache_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(cache_file, "wb") as f:
-            f.write(wheel_data)
+        with open(cache_file, "wb") as f_out:
+            f_out.write(wheel_data)
     return wheel_data
 
 

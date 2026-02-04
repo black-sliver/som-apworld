@@ -200,7 +200,7 @@ class SoMWorld(World):
                 else:
                     self.starting_characters.append(char)
                 weapon_index = working_data.get_int(character_starter_weapon_keys[char].value)
-                self.starter_weapons[char] = ItemId.glove + weapon_index
+                self.starter_weapons[char] = ItemId(ItemId.glove + weapon_index)
             self.char_classes[char] = working_data[character_class_keys[char].value]
 
     def create_regions(self) -> None:
