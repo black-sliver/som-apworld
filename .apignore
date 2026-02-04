@@ -6,11 +6,15 @@ __pycache__/
 # IDE files
 /.idea/
 
+# venv
+/.venv*/
+
 # notes
 /TODO.md
 
 # build scripts
 /vendor.py
+/requirements.txt
 
 # source control
 /.apignore
@@ -20,3 +24,8 @@ __pycache__/
 # ci and linters
 /.codespellrc
 /.codespellignore
+
+# non-apworld build output
+/*.whl
+/build/
+/dist/

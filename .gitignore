@@ -6,8 +6,17 @@ __pycache__/
 # IDE files
 /.idea/
 
+# venv
+/.venv*/
+
 # notes
 /TODO.md
 
 # build output
 /vendored/
+/build/
+/dist/
+*.whl
+*.dll
+*.pyd
+*.so
