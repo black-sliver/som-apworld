@@ -38,7 +38,7 @@ class SoMRToggle(Toggle):
 
 
 class SoMRDefaultOnToggle(SoMRToggle):
-    default = 1  # type: ignore[misc]  # this is broken in Options
+    default = 1
 
 
 class SoMRInverseToggle(SoMRDefaultOnToggle):
@@ -87,7 +87,7 @@ class Goal(SoMRChoice):
     alias_vshort = option_vanilla_short
     alias_vlong = option_vanilla_long
     alias_mtr = option_mana_tree_revival
-    default = option_vanilla_long  # type: ignore[misc]  # this is broken in Options
+    default = option_vanilla_long
     somr_setting = "opGoal"
     somr_values = ["vshort", "vlong", "mtr"]
 
@@ -98,7 +98,7 @@ class Logic(SoMRChoice):
     display_name = "Logic"
     option_basic = 0
     option_restrictive = 1
-    default = option_restrictive  # type: ignore[misc]  # this is broken in Options
+    default = option_restrictive
     somr_setting = "opLogic"
     somr_values = ["basic", "restrictive"]
 
@@ -109,7 +109,7 @@ class FlammieDrum(SoMRChoice):
     display_name = "Flammie Drum"
     option_start = 0
     option_find = 1
-    default = option_start  # type: ignore[misc]  # this is broken in Options
+    default = option_start
     somr_setting = "opFlammieDrumInLogic"
     somr_values = BOOL_VALUES
 
@@ -120,7 +120,7 @@ class MTRSeedsRequired(SoMRRange):
     display_name = "MTR Seeds Required"
     range_start = 1
     range_end = 8
-    default = 8  # type: ignore[misc]  # noqa  # this is broken in Options
+    default = 8
     somr_setting = "opNumSeeds"
 
 
@@ -145,7 +145,7 @@ class BoyRole(Role):
     """Which stats and magic the boy should have."""
 
     display_name = "Boy Role"
-    default = Role.option_boy  # type: ignore[misc]  # noqa  # this is broken in Options
+    default = Role.option_boy
     somr_setting = "opBoyRole"
 
 
@@ -153,7 +153,7 @@ class GirlRole(Role):
     """Which stats and magic the girl should have."""
 
     display_name = "Girl Role"
-    default = Role.option_girl  # type: ignore[misc]  # this is broken in Options
+    default = Role.option_girl
     somr_setting = "opGirlRole"
 
 
@@ -161,7 +161,7 @@ class SpriteRole(Role):
     """Which stats and magic the sprite should have."""
 
     display_name = "Sprite Role"
-    default = Role.option_sprite  # type: ignore[misc]  # this is broken in Options
+    default = Role.option_sprite
     somr_setting = "opSpriteRole"
 
 
@@ -173,7 +173,7 @@ class StartChar(SoMRChoice):
     option_girl = 1
     option_sprite = 2
     # default = option_boy
-    default = option_girl  # type: ignore[misc]  # this is broken in Options
+    default = option_girl
     somr_setting = "opStartChar"
     somr_values = ["boy", "girl", "sprite"]
 
@@ -190,7 +190,7 @@ class OtherChars(SoMRChoice):
     option_find_one_at_level_1 = 5
     option_find_one_at_current_level = 6
     option_none = 7
-    default = option_find_both_at_level_1  # type: ignore[misc]  # this is broken in Options
+    default = option_find_both_at_level_1
     somr_setting = "opCharacters"
     somr_values = [
         "startboth",
@@ -216,7 +216,7 @@ class StartWeapon(SoMRChoice):
     option_bow = 5
     option_boomerang = 6
     option_javelin = 7
-    default = "random"  # type: ignore[assignment,misc] # noqa
+    default = "random"  # type: ignore[assignment,unused-ignore] # broken in Options types
     # Alternatively, we could do something like this:
     # option_any = -1
     # default = option_any
@@ -234,7 +234,7 @@ class StartGold(SoMRRange):
     display_name = "Start Gold"
     range_start = 0
     range_end = 10000  # actual limit: 65535
-    default = 100  # type: ignore[misc]  # this is broken in Options
+    default = 100
     somr_setting = "opStartGold"
 
 
@@ -244,7 +244,7 @@ class ExpMultiplier(SoMRDecimalRange):
     display_name = "Exp %"
     range_start = 0
     range_end = 1000  # actual limit: 100000
-    default = 200  # type: ignore[misc]  # this is broken in Options
+    default = 200
     somr_setting = "opExp"
 
 
@@ -254,7 +254,7 @@ class GoldEnemyMultiplier(SoMRDecimalRange):
     display_name = "Enemy Gold %"
     range_start = 0
     range_end = 1000  # actual limit: 100000
-    default = 200  # type: ignore[misc]  # this is broken in Options
+    default = 200
     somr_setting = "opGold"
 
 
@@ -264,7 +264,7 @@ class GoldCheckMultiplier(SoMRRange):
     display_name = "Item Pool Gold Multiplier"
     range_start = 0
     range_end = 10  # actual limit: 50
-    default = 2  # type: ignore[misc]  # this is broken in Options
+    default = 2
     somr_setting = "opGoldCheckMul"
 
 
@@ -274,7 +274,7 @@ class GoldDropMultiplier(SoMRRange):
     display_name = "Chest Gold Multiplier"
     range_start = 0
     range_end = 10  # actual limit: 255
-    default = 2  # type: ignore[misc]  # this is broken in Options
+    default = 2
     somr_setting = "opGoldDropMul"
 
 
@@ -287,7 +287,7 @@ class ChestDropFrequency(SoMRChoice):
     option_normal = 2
     option_high = 3
     option_highest = 4
-    default = option_normal  # type: ignore[misc]  # this is broken in Options
+    default = option_normal
     somr_setting = "opChestFreq"
     somr_values = ["none", "low", "normal", "high", "highest"]
 
@@ -299,7 +299,7 @@ class ChestTrapsFrequency(SoMRChoice):
     option_none = 0
     option_normal = 1
     option_many = 2
-    default = option_normal  # type: ignore[misc]  # this is broken in Options
+    default = option_normal
     somr_setting = "opTraps"
     somr_values = ["none", "normal", "many"]
 
@@ -311,7 +311,7 @@ class Bosses(SoMRChoice):
     option_vanilla = 0
     option_swap = 1
     option_any_random = 2
-    default = option_any_random  # type: ignore[misc]  # this is broken in Options
+    default = option_any_random
     somr_setting = "opBosses"
     somr_values = ["vanilla", "swap", "random"]
 
@@ -332,7 +332,7 @@ class Enemies(SoMRChoice):
     option_random_spawns = 2
     option_oops_all = 3
     option_none = 4
-    default = option_swap  # type: ignore[misc]  # this is broken in Options
+    default = option_swap
     somr_setting = "opEnemies"
     somr_values = ["vanilla", "swap", "random", "oops", "none"]
 
@@ -353,7 +353,7 @@ class StatusAilments(SoMRChoice):
     option_random_easy = 2
     option_random_annoying = 3
     option_random_awful = 4
-    default = option_location  # type: ignore[misc]  # this is broken in Options
+    default = option_location
     somr_setting = "opStatusAilments"
     somr_values = ["location", "type", "easy", "annoying", "awful"]
 
@@ -387,7 +387,7 @@ class EnemyDifficulty(SoMRChoice):
     option_kinda_hard = 3
     option_hard = 4
     option_impossible = 5
-    default = option_normal  # type: ignore[misc]  # this is broken in Options
+    default = option_normal
     somr_setting = "opDifficulty"
     somr_values = ["easy", "sortaeasy", "normal", "kindahard", "hard", "impossible"]
 
