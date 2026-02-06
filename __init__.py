@@ -85,6 +85,14 @@ class SoMSettings(settings.Group):
         copy_to = "Secret of Mana (U).smc"
         md5s = ["10a894199a9adc50ff88815fd9853e19"]
 
+        def browse(
+                self: "settings.T",
+                *args: t.Any,
+                **kwargs: t.Any,
+        ) -> "settings.T | None":
+            assert not args
+            return super().browse([("SNES ROM", [".smc", ".sfc"])], **kwargs)
+
         def read(self, strip_header: bool = True) -> bytes:
             with open(self, "rb") as stream:
                 data = stream.read()
