@@ -76,7 +76,7 @@ class SoMRDecimalRange(Range):
 class Goal(SoMRChoice):
     """
     Vanilla Short: Beat the Mana Beast, Mana Fort available right away.
-    Vanilla Long: Beat the Mana Best, activate the Mana Fort in Grand Palace.
+    Vanilla Long: Beat the Mana Beast, activate the Mana Fort in Grand Palace.
     Mana Tree Revival: Reach the end of Pure Land with enough Mana Seeds.
     """
 
