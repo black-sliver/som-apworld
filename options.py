@@ -172,8 +172,7 @@ class StartChar(SoMRChoice):
     option_boy = 0
     option_girl = 1
     option_sprite = 2
-    # default = option_boy
-    default = option_girl
+    default = option_boy
     somr_setting = "opStartChar"
     somr_values = ["boy", "girl", "sprite"]
 
