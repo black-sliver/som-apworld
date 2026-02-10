@@ -338,7 +338,7 @@ class SoMWorld(World):
                 "grand palace 6": 425,
                 "grand palace 7": 426,
             }
-            element_names = ["Gnome", "Undein", "Salamando", "Lumina", "Sylphid", "Shade", "Luna", "Dryad"]  # 0x81..
+            element_names = ["Gnome", "Undine", "Salamando", "Lumina", "Sylphid", "Shade", "Luna", "Dryad"]  # 0x81..
             prefix = "orbElement"
             for name, map_num in orbs.items():
                 element = working_data.get_int(prefix + str(map_num))
