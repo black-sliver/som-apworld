@@ -86,9 +86,9 @@ class SoMSettings(settings.Group):
         md5s = ["10a894199a9adc50ff88815fd9853e19"]
 
         def browse(
-                self: "settings.T",
-                *args: t.Any,
-                **kwargs: t.Any,
+            self: "settings.T",
+            *args: t.Any,
+            **kwargs: t.Any,
         ) -> "settings.T | None":
             assert not args
             return super().browse([("SNES ROM", [".smc", ".sfc"])], **kwargs)

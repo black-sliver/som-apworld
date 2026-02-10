@@ -439,12 +439,10 @@ def embed(requirements_file: str | Path = "requirements.txt") -> tuple[str, str,
         f.write(install_def)
         f.write("\n")
         # write install wrapper (the thing you call)
-        f.write(
-            """
+        f.write("""
 def install() -> None:
     _install(__name__)
-"""
-        )
+""")
 
     return new_requirements_name, new_requirements_hash, tuple(new_requirements_mods)
 
