@@ -35,9 +35,6 @@ if t.TYPE_CHECKING:
 
 required_pysomr_version = "1.48.0a2"  # TODO: grab from requirements.txt
 
-# TODO: add helper script to create stuff in gen.py and for the client
-# TODO: add test that compares gen.py to a newly generated one
-
 
 def require_pysomr() -> None:
     from importlib.metadata import version as metadata_version, PackageNotFoundError
