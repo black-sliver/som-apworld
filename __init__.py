@@ -33,7 +33,7 @@ from .options import SoMOptions, Goal, SoMROptionProto
 if t.TYPE_CHECKING:
     from pysomr import OW
 
-required_pysomr_version = "1.48.0a2"  # TODO: grab from requirements.txt
+required_pysomr_version = "1.48.0a3"  # TODO: grab from requirements.txt
 
 
 def require_pysomr() -> None:
