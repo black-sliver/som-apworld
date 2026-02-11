@@ -1,11 +1,14 @@
+import logging
 import os.path
 import typing as t
 from dataclasses import fields
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import settings
 from BaseClasses import Item, Location, Region, ItemClassification, CollectionState, Tutorial, MultiWorld
 from Options import PerGameCommonOptions
-from Utils import output_path, user_path
+from Utils import output_path
 from worlds.AutoWorld import WebWorld, World
 from worlds.Files import APDeltaPatch
 
@@ -122,6 +125,9 @@ class SoMWorld(World):
 
     ow: "OW"
     """upstream SoMR OpenWorld instance"""
+    somr_log_dir: TemporaryDirectory[str] | None = None
+    somr_log_file: t.TextIO | None = None
+    somr_spoiler_file: t.TextIO | None = None
     somr_seed: str
     connect_name: str
     starting_characters: list[str]
@@ -135,6 +141,27 @@ class SoMWorld(World):
         self.findable_characters = []
         self.char_classes = {}
         self.starter_weapons = {}
+
+    def __del__(self) -> None:
+        self.cleanup()
+
+    def cleanup(self) -> None:
+        if self.somr_log_file is not None:
+            self.flush_log()
+            self.somr_log_file.close()
+            self.somr_log_file = None
+        if self.somr_spoiler_file is not None:
+            self.somr_spoiler_file.close()
+            self.somr_spoiler_file = None
+        if self.somr_log_dir is not None:
+            self.somr_log_dir.cleanup()
+            self.somr_log_dir = None
+
+    def flush_log(self, error: bool = False) -> None:
+        if self.somr_log_file is not None:
+            msg = self.somr_log_file.read()
+            if msg:
+                logging.log(logging.ERROR if error else logging.DEBUG, f"SoM for player {self.player}:\n{msg}")
 
     @classmethod
     def stage_assert_generate(cls, multiworld: MultiWorld) -> None:
@@ -157,8 +184,11 @@ class SoMWorld(World):
         while len(self.connect_name.encode("utf-8")) > 32:
             self.connect_name = self.connect_name[:-1]
         self.somr_seed = "%08X" % (self.random.randint(0, 2**64 - 1),)
+        self.somr_log_dir = TemporaryDirectory(prefix="somr_")
+        generate_spoiler = True  # TODO: disable spoiler if generating with spoiler=0 or skip_output=True
         somr_settings = {
-            "loggingDirectory": user_path("logs"),
+            "loggingDirectory": self.somr_log_dir.name,
+            "spoilerLog": "yes" if generate_spoiler else "no",
             "opMultiWorld": "yes",
             "opDisableHints": "yes",  # not supported yet
             "apSeed": self.multiworld.seed_name.encode("utf-8").hex(),
@@ -170,7 +200,29 @@ class SoMWorld(World):
                 somr_settings[option.somr_setting] = option.somr_value
             else:
                 assert option_field in fields(PerGameCommonOptions), f"{option_field.name} neither common nor SoMR"
-        self.ow = OW(self.settings.rom_file, self.somr_seed, somr_settings)
+
+        try:
+            self.ow = OW(self.settings.rom_file, self.somr_seed, somr_settings)
+            self.somr_log_file = open(Path(self.somr_log_dir.name) / f"log_{self.somr_seed}.txt")
+        except Exception as e:
+            try:
+                # flush SoMR log as error if the error is most likely coming from SoMR
+                self.somr_log_file = open(Path(self.somr_log_dir.name) / f"log_{self.somr_seed}.txt")
+                if not isinstance(e, (FileNotFoundError, PermissionError, OSError)):
+                    self.flush_log(error=True)
+            except FileNotFoundError:
+                pass
+            raise
+
+        self.flush_log()
+        if generate_spoiler:
+            self.somr_spoiler_file = open(Path(self.somr_log_dir.name) / f"log_{self.somr_seed}_SPOILER.txt")
+        # try to delete temp folder early, which works on Linux, but fails on Windows
+        try:
+            self.somr_log_dir.cleanup()
+        except (FileNotFoundError, OSError, PermissionError):
+            pass
+
         working_data = self.ow.context.working_data
         for char in ("boy", "girl", "sprite"):
             exists = working_data.get_bool(character_exists_keys[char].value)
@@ -289,13 +341,21 @@ class SoMWorld(World):
         patch_file = out_base + SoMDeltaPatch.patch_file_ending
         try:
             self.ow.run(out_file)
+            self.flush_log()
+            # NOTE: we currently can not add an extra .txt file to the zip
+            # TODO: append (parts of) the SoMR spoiler to AP spoiler
             SoMDeltaPatch(patch_file, player=self.player, player_name=self.player_name, patched_path=out_file).write()
+        except Exception as e:
+            # flush SoMR log as error if the error is most likely coming from SoMR
+            if not isinstance(e, (FileNotFoundError, PermissionError, OSError)):
+                self.flush_log(error=True)
+            raise
         finally:
             try:
-                # TODO: unlink log files
                 os.unlink(out_file)
             except FileNotFoundError:
                 pass
+            self.cleanup()
 
     def modify_multidata(self, multidata: t.Mapping[str, t.Any]) -> None:
         # we skip in case of error, so that the original error in the output thread is the one that gets raised
